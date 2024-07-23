@@ -29,7 +29,7 @@ jobs:
           fi
 
   build_nightly:
-    runs-on: [self-hosted, Windows]
+    runs-on: windows-latest
     name: Build Nightly
     needs: check_recent_commit
     if: needs.check_recent_commit.outputs.should_run == 'true'
@@ -50,10 +50,10 @@ jobs:
           arch: amd64
 
       - name: Generate CMake project
-        run: cmake -D CMAKE_BUILD_TYPE=RelWithDebInfo -D OPTIMIZE=YES -S. -Bbuild -G Ninja
+        run: cmake -D CMAKE_BUILD_TYPE=Release -D OPTIMIZE=YES -S. -Bbuild -G Ninja
 
       - name: Build 64bit release DLL
-        run: cmake --build ./build --config RelWithDebInfo --target YimMenu --
+        run: cmake --build ./build --config Release --target YimMenu --
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v3
