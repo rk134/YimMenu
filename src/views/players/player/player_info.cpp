@@ -1,7 +1,6 @@
 #include "core/data/command_access_levels.hpp"
 #include "core/data/language_codes.hpp"
 #include "core/scr_globals.hpp"
-#include "natives.hpp"
 #include "services/gta_data/gta_data_service.hpp"
 #include "services/player_database/player_database_service.hpp"
 #include "util/session.hpp"
@@ -10,7 +9,6 @@
 #include <network/netConnection.hpp>
 #include <script/globals/GPBD_FM.hpp>
 #include <script/globals/GPBD_FM_3.hpp>
-#include <script/globals/GlobalPlayerBD.hpp>
 #include <vehicle/CVehicleModelInfo.hpp>
 
 namespace big
@@ -248,7 +246,7 @@ namespace big
 
 				if (CVehicleModelInfo* vehicle_model_info = static_cast<CVehicleModelInfo*>(vehicle->m_model_info))
 				{
-					vehicle_name = g_gta_data_service->vehicles()[vehicle_model_info->m_name].m_display_name; // TODO
+					vehicle_name = g_gta_data_service.vehicles()[vehicle_model_info->m_name].m_display_name; // TODO
 				}
 
 				if (veh_damage_bits & (uint32_t)eEntityProofs::GOD)

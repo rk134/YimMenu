@@ -1,14 +1,11 @@
-#include "backend/int_command.hpp"
 #include "backend/looped_command.hpp"
 #include "gta/enums.hpp"
 #include "hooking/hooking.hpp"
 #include "natives.hpp"
-#include "util/entity.hpp"
 #include "util/math.hpp"
-#include "util/misc.hpp"
 #include "util/pools.hpp"
-
-#include <numbers>
+#include "services/friends/friends_service.hpp"
+#include "services/player_database/player_database_service.hpp"
 
 namespace big
 {
@@ -141,6 +138,17 @@ namespace big
 				{
 					continue;
 				}
+				
+				if (g.weapons.aimbot.exclude_friends && ped->m_player_info)
+				{
+					auto rockstar_id = ped->m_player_info->m_net_player_data.m_gamer_handle.m_rockstar_id;
+					auto is_friend   = friends_service::is_friend(rockstar_id);
+					auto db_player   = g_player_database_service->get_player_by_rockstar_id(rockstar_id);
+					auto is_trusted  = db_player && db_player->is_trusted;
+
+					if (is_friend || is_trusted)
+						continue;
+				}
 
 				const auto ped_handle = g_pointers->m_gta.m_ptr_to_handle(ped);
 
@@ -148,20 +156,20 @@ namespace big
 				{
 					bool is_hated_relationship = false;
 					bool is_in_combat          = PED::IS_PED_IN_COMBAT(ped_handle, self::ped);
-					auto blip_color            = HUD::GET_BLIP_COLOUR(HUD::GET_BLIP_FROM_ENTITY(ped_handle));
-					bool is_enemy = PED::GET_PED_CONFIG_FLAG(ped_handle, 38, TRUE) == TRUE || (blip_color == (int)BlipColors::BlipColorEnemy || blip_color == (int)BlipColors::RedMission);
+					auto blip_color            = HUD::GET_BLIP_HUD_COLOUR(HUD::GET_BLIP_FROM_ENTITY(ped_handle));
+					bool is_enemy = ((PED::GET_PED_CONFIG_FLAG(ped_handle, 38, TRUE) == TRUE) || (blip_color == HUD_COLOUR_RED));
 
 					switch (PED::GET_RELATIONSHIP_BETWEEN_PEDS(ped_handle, self::ped))
 					{
-					case Dislike:
-					case Wanted:
-					case Hate: is_hated_relationship = true;
+						case Dislike:
+						case Wanted:
+						case Hate: is_hated_relationship = true;
 					}
 
 					if (!is_hated_relationship && !is_in_combat && !is_enemy)
 					{
 						/*if (PED::GET_PED_TYPE(ped_handle) != PED_TYPE_ANIMAL)
-						LOG(INFO) << " PED_TYPE " << PED::GET_PED_TYPE(ped_handle) << " hated " << is_hated_relationship << " combat " << is_in_combat << " enemy " << is_enemy << " blip_color " << blip_color;*/
+							LOG(INFO) << " PED_TYPE " << PED::GET_PED_TYPE(ped_handle) << " hated " << is_hated_relationship << " combat " << is_in_combat << " enemy " << is_enemy << " blip_color " << blip_color;*/
 						continue;
 					}
 				}
@@ -285,11 +293,12 @@ namespace big
 		static void adjust_position_for_target_velocity(rage::fvector3& target_position)
 		{
 			const auto target_velocity = get_velocity(m_target);
+			const auto my_velocity     = get_velocity(g_local_player);
 
 			if (target_velocity == rage::fvector3{})
 				return;
 
-			target_position += (target_velocity - get_velocity(g_local_player));
+			target_position += (target_velocity - my_velocity);
 		}
 
 		virtual void on_tick() override
