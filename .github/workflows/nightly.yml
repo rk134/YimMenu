@@ -49,6 +49,13 @@ jobs:
         with:
           arch: amd64
 
+      - name: Cache build/
+        id: cache-build
+        uses: actions/cache@v3
+        with:
+          path: build
+          key: ${{ runner.os }}-build
+
       - name: Generate CMake project
         run: cmake -D CMAKE_BUILD_TYPE=Release -D OPTIMIZE=YES -S. -Bbuild -G Ninja
 
