@@ -130,7 +130,7 @@ namespace big
 		components::command_checkbox<"modifyexplosionradius">();
 		ImGui::InputFloat("VIEW_WEAPON_EXPLOSION_RADIUS"_T.data(), &g.weapons.set_explosion_radius, .1, 200, "%.1f");
 
-
+		ImGui::PushID("custom_weapon_view");
 		ImGui::SeparatorText("CUSTOM_WEAPONS"_T.data());
 
 		ImGui::Checkbox("VIEW_WEAPON_CUSTOM_GUN_ONLY_FIRES_WHEN_THE_WEAPON_IS_OUT"_T.data(), &g.self.custom_weapon_stop);
@@ -154,6 +154,7 @@ namespace big
 
 			ImGui::EndCombo();
 		}
+		ImGui::PopID();
 
 		switch (selected)
 		{
@@ -224,10 +225,17 @@ namespace big
 
 			ImGui::PushItemWidth(350);
 			ImGui::SliderFloat("VIEW_WEAPON_AIM_FOV"_T.data(), &g.weapons.aimbot.fov, 1.f, 360.f, "%.0f");
+			if (g.weapons.aimbot.use_weapon_range)
+				ImGui::BeginDisabled();
 			ImGui::SliderFloat("VIEW_SELF_CUSTOM_TELEPORT_DISTANCE"_T.data(), &g.weapons.aimbot.distance, 1.f, 1000.f, "%.0f");
+			ImGui::SameLine();
+			if (g.weapons.aimbot.use_weapon_range)
+				ImGui::EndDisabled();
+			ImGui::Checkbox("BACKEND_LOOPED_WEAPONS_USE_MAX_RANGE"_T.data(), &g.weapons.aimbot.use_weapon_range);
 			ImGui::PopItemWidth();
 		}
 
+		ImGui::PushID("ammunation_view");
 		if (ImGui::CollapsingHeader("VIEW_WEAPON_AMMUNATION"_T.data()))
 		{
 			static Hash selected_weapon_hash, selected_weapon_attachment_hash{};
@@ -326,6 +334,7 @@ namespace big
 				WEAPON::SET_PED_WEAPON_TINT_INDEX(self::ped, selected_weapon_hash, tint);
 			});
 		}
+		ImGui::PopID();
 		if (ImGui::CollapsingHeader("VIEW_WEAPON_PERSIST_WEAPONS"_T.data()))
 		{
 			ImGui::PushID(1);
